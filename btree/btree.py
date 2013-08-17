@@ -48,8 +48,7 @@ from google.appengine.ext import ndb
 import internal
 
 __author__ = "Tijmen Roberti"
-__license__ = "Apache 2.0"
-
+__license__ = "MIT"
 __all__ = ['BTree', 'MultiBTree', 'MultiBTree2']
 
 

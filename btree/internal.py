@@ -2,7 +2,7 @@
 Actual BTree implementation. Do not use directly.
 """
 __author__ = "Tijmen Roberti"
-__license__ = "Apache 2.0"
+__license__ = "MIT"
 
 import bisect
 from itertools import izip, izip_longest, chain
