@@ -70,6 +70,7 @@ class _BTreeBase(internal._BTreeBase):
     """
     Contains all operations that are common to all trees.
     """
+
     @batch_operation
     def get_by_index(self, index):
         """
@@ -77,7 +78,6 @@ class _BTreeBase(internal._BTreeBase):
         the index is out of bounds.
         """
         return self._get_by_index(n)
-
 
     @batch_operation
     def get_range(self, a, b):
@@ -88,19 +88,18 @@ class _BTreeBase(internal._BTreeBase):
         """
         return self[a:b]
 
-
     @batch_operation
     def index(self, key):
         """
         Returns the index of the entry with the given key in the tree.
 
-        Raises an IndexError if no such key exists.
+        Raises:
+          IndexError: if the key does not exist in the tree.
         """
         i = self._left_index_of_key(key)
         if i == -1:
             raise IndexError("Key %s not found in the tree." % key)
         return i
-
 
     @batch_operation
     def lower_bound(self, key):
@@ -110,6 +109,13 @@ class _BTreeBase(internal._BTreeBase):
         """
         return self._lower_bound_index(key)
 
+    @batch_operation
+    def upper_bound(self, key):
+        """
+        Returns the index of the first item whose key is strictly
+        greater than |key|.
+        """
+        return self._upper_bound_index(key)
 
     @batch_operation
     def pop(self, index):
@@ -120,8 +126,6 @@ class _BTreeBase(internal._BTreeBase):
            IndexError: If the index is out of bounds.
         """
         return self._delete_index(index)
-
-
 
     @batch_operation
     def tree_size(self):
@@ -286,19 +290,13 @@ class MultiBTree(_BTreeBase):
         """
         return self._get_all_by_key(key)
 
-
-    @batch_operation
-    def upper_bound(self, key):
-        """
-        Returns the index of the item whose key is strictly greater
-        than |key|.
-        """
-        return self._upper_bound_index(key)
-
     @batch_operation
     def index_left(self, key):
         """
-        Identical to a call to index(key).
+        Returns the index of the first item with the given key.
+
+        Raises:
+          IndexError: If the key does not exist in the tree.
         """
         return self.index(key)
 
@@ -307,6 +305,9 @@ class MultiBTree(_BTreeBase):
         """
         Returns the index of the item after the last entry with the
         given |key|.
+
+        Raises:
+          IndexError: If the key does not exist in the tree.
         """
         i = self._right_index_of_key(key)
         if i == -1:
@@ -388,7 +389,6 @@ class MultiBTree2(_BTreeBase):
         for (key, value, id) in itertools.izip(keys, values, identifiers):
             self._insert(key, value, id, allow_duplicates=True)
 
-
     @batch_operation
     def count(self, key):
         """
@@ -412,14 +412,6 @@ class MultiBTree2(_BTreeBase):
         exists.
         """
         return self._get_by_identifier(identifier)
-
-    @batch_operation
-    def upper_bound(self, key):
-        """
-        Returns the index of the item whose key is strictly greater
-        than |key|.
-        """
-        return self._upper_bound_index(key)
 
     @batch_operation
     def index_left(self, key):
