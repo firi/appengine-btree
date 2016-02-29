@@ -79,7 +79,7 @@ class _BTreeBase(internal._BTreeBase):
 
         Args:
           key_name: The name of this BTree entity.
-          minimum_dgree: The degree of the BTree. This value must be
+          minimum_degree: The degree of the BTree. This value must be
             at least 2.
 
         Raises:
@@ -110,7 +110,7 @@ class _BTreeBase(internal._BTreeBase):
             inserted to the Datastore. Can be an integer or a string.
           minimum_degree: The degree of the tree if it is created. Must be
             at least 2. See comments at the top of this module for
-            guidance on chosing the right degree.
+            guidance on choosing the right degree.
           parent: An optional ndb.Key tbat is the key of the parent
             entity for this BTree.
         """
