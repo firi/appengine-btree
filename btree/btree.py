@@ -70,6 +70,67 @@ class _BTreeBase(internal._BTreeBase):
     """
     Contains all operations that are common to all trees.
     """
+    @classmethod
+    def create(cls, key_name, minimum_degree, parent=None):
+        """
+        Create a new BTree instance with the given |key_name| and
+        |minimum_degree|. This will create all initial entities
+        and puts them in the Datastore.
+
+        Args:
+          key_name: The name of this BTree entity.
+          minimum_dgree: The degree of the BTree. This value must be
+            at least 2.
+
+        Raises:
+          ValueError: If minimum_degree has an invalid value.
+        """
+        tree = cls(id=key_name, parent=parent)
+        tree._initialize(minimum_degree)
+        return tree
+
+    @classmethod
+    def get_or_create(cls, name, minimum_degree, parent=None):
+        """
+        Gets the BTree with the given |name|. If this function is
+        called from a transaction, then the tree is directly retrieved
+        from the Datastore. If not, then first memcache is tried, and
+        then the datastore. This is save, as the BTree model entities
+        are immutable and can be safely memcached.
+
+        If the tree does not exist yet, then a new transaction is
+        started to create the tree wth the provided |degree|. If a
+        transaction is already in progress, then this transaction will
+        be used to create the new tree. Note that this can produce
+        errors if the entity groups do not match (and no cross-group
+        transactions are used).
+
+        Args:
+          name: The key name of the BTree that is retrieved or otherwise
+            inserted to the Datastore. Can be an integer or a string.
+          minimum_degree: The degree of the tree if it is created. Must be
+            at least 2. See comments at the top of this module for
+            guidance on chosing the right degree.
+          parent: An optional ndb.Key tbat is the key of the parent
+            entity for this BTree.
+        """
+        key = ndb.Key(cls, name, parent=parent)
+
+        def txn():
+            tree = key.get()
+            if tree is None:
+                tree = cls.create(name, minimum_degree, parent=parent)
+            return tree
+
+        if ndb.in_transaction():
+            tree = txn()
+        else:
+            # Not in a transaction, try memcache, then datastore.
+            tree = key.get()
+            if tree is None:
+                tree = ndb.transaction(txn)
+        return tree
+
 
     @batch_operation
     def get_by_index(self, index):
@@ -78,6 +139,7 @@ class _BTreeBase(internal._BTreeBase):
         the index is out of bounds.
         """
         return self._get_by_index(n)
+
 
     @batch_operation
     def get_range(self, a, b):
@@ -196,15 +258,6 @@ class BTree(_BTreeBase):
     The methods specified in this class are in addition to the ones
     described above.
     """
-    @staticmethod
-    def create(key_name, minimum_degree, parent=None):
-        """
-        Create a new BTree instance with the given |key_name|.
-        """
-        tree = BTree(id=key_name, parent=parent)
-        tree._initialize(minimum_degree)
-        return tree
-
     @batch_operation
     def insert(self, key, value):
         """
@@ -247,15 +300,6 @@ class MultiBTree(_BTreeBase):
 
     If the items need to be uniquely identifable, use MultiBTree2.
     """
-    @staticmethod
-    def create(key_name, minimum_degree, parent=None):
-        """
-        Create a new BTree instance with the given |key_name|.
-        """
-        tree = MultiBTree(id=key_name, parent=parent)
-        tree._initialize(minimum_degree)
-        return tree
-
     @batch_operation
     def insert(self, key, value):
         """
@@ -341,15 +385,6 @@ class MultiBTree2(_BTreeBase):
     Obviously, storage costs are also increased, as the identifier is
     stored with each key, value pair.
     """
-    @staticmethod
-    def create(key_name, minimum_degree, parent=None):
-        """
-        Create a new BTree instance with the given |key_name|.
-        """
-        tree = MultiBTree2(id=key_name, parent=parent)
-        tree._initialize(minimum_degree)
-        return tree
-
     @batch_operation
     def insert(self, key, value, identifier):
         """

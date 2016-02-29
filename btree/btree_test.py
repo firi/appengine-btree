@@ -81,6 +81,42 @@ class BTreeTest(BTreeTestBase):
         self.assertRaises(ValueError, BTree.create, "tree", 1)
 
 
+    def test_get_or_create(self):
+        """
+        Tests get_or_create function.
+        """
+        # BTree
+        tree = BTree.get_or_create("tree", 2)
+        self.assertTrue(isinstance(tree, BTree))
+        self.validate_empty_tree(tree)
+        # MultiBTree
+        mtree = MultiBTree.get_or_create("mtree", 2)
+        self.assertTrue(isinstance(mtree, MultiBTree))
+        self.validate_empty_tree(mtree)
+        # MultiBTree2
+        mtree2 = MultiBTree2.get_or_create("mtree2", 2)
+        self.assertTrue(isinstance(mtree2, MultiBTree2))
+        self.validate_empty_tree(mtree2)
+        # Test with a parent entity
+        parent = ndb.Key('Parent', 'test')
+        tree_with_parent = BTree.get_or_create('tree-with-parent', 2,
+                                               parent=parent)
+        self.assertEqual(tree_with_parent.key,
+                         ndb.Key('Parent', 'test', 'BTree', 'tree-with-parent'))
+        # Test get inside a transaction.
+        def txn():
+            return BTree.get_or_create("tree", 2)
+        tree_txn = ndb.transaction(txn)
+        self.assertEqual(tree, tree_txn)
+        # Test create inside a transaction
+        def txn():
+            return BTree.get_or_create("tree-new", 2, parent=parent)
+        tree_new = ndb.transaction(txn)
+        self.assertIsNotNone(tree_new)
+        # Test invalid degree
+        self.assertRaises(ValueError, BTree.get_or_create, "tree-invalid", 1)
+
+
     def test_insert_full_root(self):
         t = 5
         tree = BTree.create("tree", 5)
@@ -718,9 +754,9 @@ class BTreeTest(BTreeTestBase):
 
 
 def main():
-#    fast = unittest.TestSuite()
-#    fast.addTest(BTreeTest('test_get_range'))
-#    unittest.TextTestRunner().run(fast)
+    fast = unittest.TestSuite()
+    fast.addTest(BTreeTest('test_get_or_create'))
+    unittest.TextTestRunner().run(fast)
     unittest.main()
 
 

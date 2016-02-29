@@ -18,11 +18,19 @@ def main(sdk_path):
     sys.path.insert(0, sdk_path)
     import api_server
     api_server.fix_sys_path()
+    # Use this to run a particular test during development
+#    from btree import btree_test
+#    fast = unittest.TestSuite()
+#    fast.addTest(btree_test.BTreeTest('test_get_or_create'))
+#    unittest.TextTestRunner().run(fast)
+
+    # Runs all tests
     suite = unittest.loader.TestLoader().\
         discover('.', pattern='*_test.py')
     result = unittest.TextTestRunner(verbosity=2).run(suite)
     if not result.wasSuccessful():
         sys.exit(1)
+
 
 if __name__ == '__main__':
     parser = optparse.OptionParser(USAGE)
