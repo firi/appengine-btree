@@ -88,14 +88,17 @@ class BTreeTest(BTreeTestBase):
         # BTree
         tree = BTree.get_or_create("tree", 2)
         self.assertTrue(isinstance(tree, BTree))
+        self.assertEqual(tree.degree, 2)
         self.validate_empty_tree(tree)
         # MultiBTree
-        mtree = MultiBTree.get_or_create("mtree", 2)
+        mtree = MultiBTree.get_or_create("mtree", 5)
         self.assertTrue(isinstance(mtree, MultiBTree))
+        self.assertEqual(mtree.degree, 5)
         self.validate_empty_tree(mtree)
         # MultiBTree2
-        mtree2 = MultiBTree2.get_or_create("mtree2", 2)
+        mtree2 = MultiBTree2.get_or_create("mtree2", 10)
         self.assertTrue(isinstance(mtree2, MultiBTree2))
+        self.assertEqual(mtree2.degree, 10)
         self.validate_empty_tree(mtree2)
         # Test with a parent entity
         parent = ndb.Key('Parent', 'test')
