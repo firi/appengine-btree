@@ -19,8 +19,8 @@ Each node in the tree is serialized to a single entity in the App
 Engine datstore. The degree must thus be chosen such that the total
 size of the node's keys and values do not exceed the 1MB entity size
 limit. Each node will hold a maximum of 2 * degree keys and
-values. The BTreeMulti2 implementation also stores an additional 2 *
-degree entities for indexing operations.
+values. The BTreeMulti2 implementation also stores an additional
+entity for each entree in the tree to support indexing operations.
 
 Higher degrees reduce the depth of the tree, and thus require fewer
 datastore operations for most of the functionality of the tree. Larger
