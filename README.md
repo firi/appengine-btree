@@ -39,48 +39,49 @@ item = tree[-1:]
 Note that all operations perform Datastore RPCs under the hood, and
 every operation starts a new transaction. The btree module has a
 special `perform_in_batch()` method which lets multiple operations on
-one tree use the same trnasaction and caches the tree in
-memory. Batching reduces Datastore RPCs and thus cost as well as
-latency. You should batch whenever possible.
+one tree use the same transaction and caches the tree in
+memory. Batching reduces Datastore RPCs and thus reduces cost as well
+as latency. You should batch operations whenever possible.
 
 ```
 # It is save to get the tree entity outside the transaction,
-# as it is immutable and never changes.
+# as it is immutable and never changes. These entities are
+# also stored in memcache.
 tree = BTree.get_by_id('tree')
 def f():
     # All these inserts now use the same transaction
     # and much less RPCs.
     for x in range(25):
         tree.insert(x, "value-%d" % x)
-    # Similar, getting the size uses the cached nodes and
+    # Similarly, getting the size uses the cached nodes and
     # performs no additional RPCs
     return tree.tree_size()
-tree.perform_in_batch(f)
+new_size = tree.perform_in_batch(f)
 ```
 
 ## Implementation Details
 
 The BTree/MultiBTree/MultiBTree2 entity forms the root entity of the
 entity group that contains the entire tree.  Each node in the tree is
-serialized to a single entity in the App Engine datstore. The degree
-of the tree must thus be chosen such that the total size of the node's
-keys and values do not exceed the 1MB entity size limit. Each node
-will hold a maximum of 2 * degree keys and values. Higher degrees
-reduce the depth of the tree, and thus require fewer datastore
-operation for most of the operations on the tree. As long as your keys
-and values are small, a degree of around a few hundred should be fine.
+serialized to a single entity in the App Engine Datastore. The degree
+of the tree must therefore be chosen such that the total size of the
+node's keys and values do not exceed the 1MB entity size limit. Each
+node will hold a maximum of 2 * degree keys and values. Higher degrees
+reduce the depth of the tree and require fewer datastore operation for
+most of the operations on the tree. As long as your keys and values
+are small, a degree of around a few hundred should be fine.
 
-Higher degrees do have slightly higher serialization costs, because
+Larger degrees do have slightly higher serialization costs, because
 the entities themselves are larger. Although pickling is one of the
 fastest serialization options available on App Engine Python, it
 should still be kept in mind. Best is to try trees with varying
-degrees on a real work load to get the right balance between the
-amount of RPCs and serialization time.
+degrees on a real workload to find the degree with the right balance
+between theamount of RPCs and serialization time required.
 
 The BTreeMulti2 implementation also stores an additional N entities
 for indexing operations, where N is the number of items in the tree.
 
-The main drawback of this btree module is that All entities in the
+The main drawback of this btree module is that all entities in the
 tree belong to a single entity group, which effectively limits the
 write rate of the tree to about 1 write/second (in practice this is
 higher, but less than an order of magnitude more). By using the batch
@@ -89,7 +90,9 @@ although some caution must be used to ensure that the AppEngine
 transaction size limit of 10MB is not crossed. For example, if the
 tree is very large, inserting 100 entries in a batch might touch about
 100 nodes (each entry ends up in a separate node). If the nodes
-themselves are large, the 10MB limit could be crossed.
+themselves are large, the 10MB limit could be crossed. Again, this
+depends on the size of your nodes and should be tested on a real
+workload.
 
 ### Production Use
 
@@ -101,5 +104,6 @@ million.
 
 * Allow more types to be used as identifiers in MultiBTree2. Anything
   that is a valid entity key should be usable as identifier.
-* Slightly more deliberate and structured unittesting.
+* More deliberate and structured unittesting. All code should be
+  covered by tests, but some edge cases are hard to test.
 
