@@ -138,7 +138,7 @@ class _BTreeBase(internal._BTreeBase):
         Returns the item at the given index. Raises an IndexError if
         the index is out of bounds.
         """
-        return self._get_by_index(n)
+        return self._get_by_index(index)
 
 
     @batch_operation

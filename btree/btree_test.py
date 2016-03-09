@@ -157,13 +157,11 @@ class BTreeTest(BTreeTestBase):
         self.assertEqual([], walk_keys(tree))
         self.validate_empty_tree(tree)
 
-
     def test_delete_nonexisting_items(self):
         """Insert and delete a single item."""
         tree = BTree.create("tree", 3)
         out = tree.remove(234)
         self.assertIsNone(out)
-
 
     def test_insert_two_delete_one(self):
         tree = BTree.create("tree", 3)
@@ -245,6 +243,11 @@ class BTreeTest(BTreeTestBase):
         self.assertEqual(items, tree[0:tree.tree_size()])
         self.assertEqual(tree[-1], tree[tree.tree_size() - 1])
         self.assertRaises(IndexError, tree.__getitem__, -(len(items) + 1))
+
+        self.assertEqual(tree.get_by_index(0), tree[0])
+        with self.assertRaises(ValueError):
+            tree[::2]
+        self.assertEqual(tree.get_range(5, 10), tree[5:10])
 
 
     def test_get_range(self):
@@ -371,11 +374,17 @@ class BTreeTest(BTreeTestBase):
         for x in seq:
             self.assertEqual([x], tree.get_all(x[0]))
 
-        tree = MultiBTree.create("tree", 3)
+        tree = MultiBTree.create("tree-all", 3)
         items = [(2, str(x)) for x in range(40)]
         for item in items:
             tree.insert(*item)
         self.assertEqual(items, tree.get_all(2))
+
+        tree3 = MultiBTree2.create("tree-3", 3)
+        items = [(3, str(x), str(x)) for x in range(10)]
+        tree3.update(items)
+        self.assertEqual(items, tree3.get_all(3))
+
 
     def test_delete_multitree(self):
         """Tests delete all for multitrees"""
@@ -460,7 +469,8 @@ class BTreeTest(BTreeTestBase):
         self.validate_indices(tree)
         self.assertRaises(ValueError, tree.insert, 123, 'abc', None)
         self.assertRaises(ValueError, tree.insert, 123, 'abc', 123)
-
+        with self.assertRaises(ValueError):
+            tree.update([(123, 'abc', 'abc'), (234, 'def', None)])
 
     def test_identifiers_in_transaction(self):
         """
