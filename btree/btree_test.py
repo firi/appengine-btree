@@ -19,6 +19,9 @@ class BTreeTestBase(unittest.TestCase):
         self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(probability=0)
         self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
         self.testbed.init_memcache_stub()
+        # Silences the logging messages during the tests
+        ndb.add_flow_exception(ValueError)
+        ndb.add_flow_exception(IndexError)
 
     def tearDown(self):
         self.testbed.deactivate()
