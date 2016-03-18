@@ -4,29 +4,30 @@ Tests for the BTrees.
 import logging
 import unittest
 from google.appengine.ext import ndb
-from google.appengine.ext.ndb import tasklets
-import test_utils
+from google.appengine.ext import testbed
+from google.appengine.datastore import datastore_stub_util
 
 from . import BTree, MultiBTree, MultiBTree2
 
 import internal
 
+
+class BTreeTestBase(unittest.TestCase):
+    def setUp(self):
+        self.testbed = testbed.Testbed()
+        self.testbed.activate()
+        self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(probability=0)
+        self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
+        self.testbed.init_memcache_stub()
+
+    def tearDown(self):
+        self.testbed.deactivate()
+
+
+# helper functions
 def issorted(l):
     return all(l[i] <= l[i+1] for i in xrange(len(l)-1))
 
-class BTreeTestBase(test_utils.NDBTest):
-    def ResetKindMap(self):
-        # Overridden to disable the kind map reset in NDBTest.
-        pass
-
-    def SetupContextCache(self):
-        # Override the context creation in NDBTest, as the implementation
-        # relies on the context cache.
-        ctx = tasklets.make_default_context()
-        tasklets.set_context(ctx)
-        ctx.set_cache_policy(True)
-
-# helper functions
 def walk_items(tree):
     return tree[:]
 
