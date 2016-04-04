@@ -550,23 +550,23 @@ class BTreeTest(BTreeTestBase):
         tree.update((x, str(x)) for x in range(50))
         for x in range(50):
             self.assertEqual(x, tree.index(x))
-        self.assertRaises(IndexError, tree.index, -10)
+        self.assertRaises(ValueError, tree.index, -10)
 
         tree = MultiBTree.create("tree", 3)
         tree.update((x, str(x)) for x in range(50))
         for x in range(50):
             self.assertEqual(x, tree.index(x))
             self.assertEqual(x + 1, tree.index_right(x))
-        self.assertRaises(IndexError, tree.index_left, -1)
-        self.assertRaises(IndexError, tree.index_right, -1)
+        self.assertRaises(ValueError, tree.index_left, -1)
+        self.assertRaises(ValueError, tree.index_right, -1)
         tree = MultiBTree2.create("tree", 3)
         tree.update((x % 5, str(x), str(x)) for x in range(50))
         for x in range(5):
             self.assertEqual(tree.count(x), 10)
             self.assertEqual(tree.index_left(x), 10 * x)
             self.assertEqual(tree.index_right(x), 10 * x + 10)
-        self.assertRaises(IndexError, tree.index, 5)
-        self.assertRaises(IndexError, tree.index_right, 5)
+        self.assertRaises(ValueError, tree.index, 5)
+        self.assertRaises(ValueError, tree.index_right, 5)
 
 
     def test_batch_operations(self):

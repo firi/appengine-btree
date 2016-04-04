@@ -156,11 +156,11 @@ class _BTreeBase(internal._BTreeBase):
         Returns the index of the entry with the given key in the tree.
 
         Raises:
-          IndexError: if the key does not exist in the tree.
+          ValueError: if the key does not exist in the tree.
         """
         i = self._left_index_of_key(key)
         if i == -1:
-            raise IndexError("Key %s not found in the tree." % key)
+            raise ValueError("Key %s not found in the tree." % (key,))
         return i
 
     @batch_operation
@@ -340,7 +340,7 @@ class MultiBTree(_BTreeBase):
         Returns the index of the first item with the given key.
 
         Raises:
-          IndexError: If the key does not exist in the tree.
+          ValueError: If the key does not exist in the tree.
         """
         return self.index(key)
 
@@ -351,11 +351,11 @@ class MultiBTree(_BTreeBase):
         given |key|.
 
         Raises:
-          IndexError: If the key does not exist in the tree.
+          ValueError: If the key does not exist in the tree.
         """
         i = self._right_index_of_key(key)
         if i == -1:
-            raise IndexError("Key %s not found in the tree." % key)
+            raise ValueError("Key %s not found in the tree." % (key,))
         return i
 
     @batch_operation
@@ -406,7 +406,7 @@ class MultiBTree2(_BTreeBase):
         if identifier is not None:
             self._insert(key, value, identifier, allow_duplicates=True)
         else:
-            raise ValueError("Invalid identifier: %s" % identifier)
+            raise ValueError("Invalid identifier: %s" % (identifier,))
 
     @batch_operation
     def update(self, iterable):
@@ -460,10 +460,13 @@ class MultiBTree2(_BTreeBase):
         """
         Returns the index of the item after the last entry with the
         given |key|.
+
+        Raises:
+          ValueError: If the key is not in the tree.
         """
         i = self._right_index_of_key(key)
         if i == -1:
-            raise IndexError("Key %s not found in the tree." % key)
+            raise ValueError("Key %s not found in the tree." % (key,))
         return i
 
     @batch_operation
